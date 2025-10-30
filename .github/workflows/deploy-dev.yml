@@ -45,7 +45,8 @@ jobs:
 
       - name: Configure Snowflake Connection
         run: |
-          snow connection add dev \
+          snow connection add \
+            --connection-name dev \
             --account "$SNOWFLAKE_ACCOUNT" \
             --user "$SNOWFLAKE_USER" \
             --password "$SNOWFLAKE_PASSWORD" \
