@@ -105,6 +105,5 @@ jobs:
         run: |
           echo "✓ Deployment to DEV completed successfully!"
           echo "Database: $SNOWFLAKE_DATABASE"
-          echo "Schema: $SNOWFLAKE_SCHEMA"
           echo "Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
 

@@ -124,7 +124,6 @@ jobs:
           echo "✓ PRODUCTION DEPLOYMENT COMPLETED"
           echo "========================================"
           echo "Database: $SNOWFLAKE_DATABASE"
-          echo "Schema: $SNOWFLAKE_SCHEMA"
           echo "Deployed by: ${{ github.actor }}"
           echo "Commit: ${{ github.sha }}"
           echo "Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
