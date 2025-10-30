@@ -1,7 +1,7 @@
 # ============================================================================
 # GitHub Actions Workflow: Deploy to Development
 # Description: Automated deployment to DEV environment using Snowflake CLI
-# Trigger: Push to main branch
+# Trigger: Push to development branch OR PR opened to main/production
 # Reference: https://docs.snowflake.com/en/developer-guide/builders/devops
 # ============================================================================
 
@@ -11,6 +11,11 @@ on:
   push:
     branches:
       - development
+    paths:
+      - 'adf_dwh/**'
+  pull_request:
+    branches:
+      - main
     paths:
       - 'adf_dwh/**'
 
