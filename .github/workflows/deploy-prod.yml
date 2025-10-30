@@ -62,12 +62,6 @@ jobs:
             --database "$SNOWFLAKE_DATABASE" \
             --default
 
-      - name: Pre-Deployment Backup Info
-        run: |
-          echo "📊 Capturing pre-deployment state..."
-          snow sql -q "SHOW TABLES IN SCHEMA $SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA;" || true
-          snow sql -q "SELECT COUNT(*) AS TABLE_COUNT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '$SNOWFLAKE_SCHEMA';" || true
-
       - name: Deploy All Database Objects
         run: |
           # Function to execute SQL files with common parameters
