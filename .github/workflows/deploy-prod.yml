@@ -1,0 +1,132 @@
+# ============================================================================
+# GitHub Actions Workflow: Deploy to Production
+# Description: Manual deployment to PROD environment with approval
+# Trigger: Manual (workflow_dispatch)
+# Reference: https://docs.snowflake.com/en/developer-guide/builders/devops
+# ============================================================================
+
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type "DEPLOY" to confirm production deployment'
+        required: true
+        type: string
+
+jobs:
+  validate-input:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate confirmation
+        run: |
+          if [ "${{ github.event.inputs.confirmation }}" != "DEPLOY" ]; then
+            echo "❌ Deployment cancelled - confirmation not provided"
+            exit 1
+          fi
+          echo "✓ Confirmation validated"
+
+  deploy-prod:
+    runs-on: ubuntu-latest
+    needs: validate-input
+    environment: production  # Requires approval in GitHub
+
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_PROD_USER }}
+      SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PROD_PASSWORD }}
+      SNOWFLAKE_ROLE:  ${{ secrets.SNOWFLAKE_PROD_ROLE }}
+      SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_PROD_WAREHOUSE }}
+      SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_PROD_DATABASE }}
+
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Snowflake CLI
+        uses: Snowflake-Labs/snowflake-cli-action@v1.5
+        with:
+          cli-version: "latest"
+          default-config-file-path: ".snowflake/config.toml"
+
+      - name: Configure Snowflake Connection
+        run: |
+          snow connection add prod \
+            --account "$SNOWFLAKE_ACCOUNT" \
+            --user "$SNOWFLAKE_USER" \
+            --password "$SNOWFLAKE_PASSWORD" \
+            --role "$SNOWFLAKE_ROLE" \
+            --warehouse "$SNOWFLAKE_WAREHOUSE" \
+            --database "$SNOWFLAKE_DATABASE" \
+            --default
+
+      - name: Pre-Deployment Backup Info
+        run: |
+          echo "📊 Capturing pre-deployment state..."
+          snow sql -q "SHOW TABLES IN SCHEMA $SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA;" || true
+          snow sql -q "SELECT COUNT(*) AS TABLE_COUNT FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = '$SNOWFLAKE_SCHEMA';" || true
+
+      - name: Deploy All Database Objects
+        run: |
+          # Function to execute SQL files with common parameters
+          execute_sql() {
+            local file=$1
+            echo "  → Deploying $(basename $file) to PRODUCTION..."
+            snow sql -f "$file" \
+              -D "environment='PROD'"
+          }
+          
+          # Deploy in dependency order
+          echo "Step 1: Setting up database..."
+          if [ -d "adf_dwh/std_edw/setup" ]; then
+            for file in adf_dwh/std_edw/setup/*.sql; do
+              [ -f "$file" ] && execute_sql "$file"
+            done
+          fi
+          
+          echo ""
+          echo "Step 2: Deploying tables..."
+          if [ -d "adf_dwh/std_edw/tables" ]; then
+            for file in adf_dwh/std_edw/tables/*.sql; do
+              [ -f "$file" ] && execute_sql "$file"
+            done
+          fi
+          
+          echo ""
+          echo "Step 3: Deploying views..."
+          if [ -d "adf_dwh/std_edw/views" ]; then
+            for file in adf_dwh/std_edw/views/*.sql; do
+              [ -f "$file" ] && execute_sql "$file"
+            done
+          fi
+          
+          echo ""
+          echo "Step 4: Deploying procedures..."
+          if [ -d "adf_dwh/std_edw/procedures" ]; then
+            for file in adf_dwh/std_edw/procedures/*.sql; do
+              [ -f "$file" ] && execute_sql "$file"
+            done
+          fi
+          
+          echo ""
+          echo "Step 5: Deploying tasks..."
+          if [ -d "adf_dwh/std_edw/tasks" ]; then
+            for file in adf_dwh/std_edw/tasks/*.sql; do
+              [ -f "$file" ] && execute_sql "$file"
+            done
+          fi
+
+      - name: Deployment Summary
+        run: |
+          echo "========================================"
+          echo "✓ PRODUCTION DEPLOYMENT COMPLETED"
+          echo "========================================"
+          echo "Database: $SNOWFLAKE_DATABASE"
+          echo "Schema: $SNOWFLAKE_SCHEMA"
+          echo "Deployed by: ${{ github.actor }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+          echo "========================================"
+

@@ -1,0 +1,42 @@
+# Snowflake CLI
+.snowflake/
+config.toml
+
+# Environment variables
+.env
+.env.local
+*.env
+!.env.template
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+ENV/
+env/
+.Python
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Azure DevOps
+.azure/
+
+# Snowflake session files
+*.session
+
+# Backup files
+*.bak
+*.backup

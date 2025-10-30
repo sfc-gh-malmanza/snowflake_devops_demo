@@ -1,0 +1,110 @@
+# ============================================================================
+# GitHub Actions Workflow: Deploy to Development
+# Description: Automated deployment to DEV environment using Snowflake CLI
+# Trigger: Push to main branch
+# Reference: https://docs.snowflake.com/en/developer-guide/builders/devops
+# ============================================================================
+
+name: Deploy to Development
+
+on:
+  push:
+    branches:
+      - development
+    paths:
+      - 'adf_dwh/**'
+
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    environment: development
+
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_DEV_USER }}
+      SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_DEV_PASSWORD }}
+      SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_DEV_ROLE }}
+      SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_DEV_WAREHOUSE }}
+      SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DEV_DATABASE }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Snowflake CLI
+        uses: Snowflake-Labs/snowflake-cli-action@v1.5
+        with:
+          cli-version: "latest"
+          default-config-file-path: ".snowflake/config.toml"
+
+      - name: Configure Snowflake Connection
+        run: |
+          snow connection add dev \
+            --account "$SNOWFLAKE_ACCOUNT" \
+            --user "$SNOWFLAKE_USER" \
+            --password "$SNOWFLAKE_PASSWORD" \
+            --role "$SNOWFLAKE_ROLE" \
+            --warehouse "$SNOWFLAKE_WAREHOUSE" \
+            --database "$SNOWFLAKE_DATABASE" \
+            --default
+
+
+      - name: Deploy All Database Objects
+        run: |
+          # Function to execute SQL files with common parameters
+          execute_sql() {
+            local file=$1
+            echo "  → Deploying $(basename $file)..."
+            snow sql -f "$file" \
+              -D "environment='DEV'"
+          }
+          
+          # Deploy in dependency order
+          echo "Step 1: Setting up database..."
+          if [ -d "adf_dwh/std_edw/setup" ]; then
+            for file in adf_dwh/std_edw/setup/*.sql; do
+              [ -f "$file" ] && execute_sql "$file"
+            done
+          fi
+          
+          echo ""
+          echo "Step 2: Deploying tables..."
+          if [ -d "adf_dwh/std_edw/tables" ]; then
+            for file in adf_dwh/std_edw/tables/*.sql; do
+              [ -f "$file" ] && execute_sql "$file"
+            done
+          fi
+          
+          echo ""
+          echo "Step 3: Deploying views..."
+          if [ -d "adf_dwh/std_edw/views" ]; then
+            for file in adf_dwh/std_edw/views/*.sql; do
+              [ -f "$file" ] && execute_sql "$file"
+            done
+          fi
+          
+          echo ""
+          echo "Step 4: Deploying procedures..."
+          if [ -d "adf_dwh/std_edw/procedures" ]; then
+            for file in adf_dwh/std_edw/procedures/*.sql; do
+              [ -f "$file" ] && execute_sql "$file"
+            done
+          fi
+          
+          echo ""
+          echo "Step 5: Deploying tasks..."
+          if [ -d "adf_dwh/std_edw/tasks" ]; then
+            for file in adf_dwh/std_edw/tasks/*.sql; do
+              [ -f "$file" ] && execute_sql "$file"
+            done
+          fi
+
+
+      - name: Deployment Summary
+        run: |
+          echo "✓ Deployment to DEV completed successfully!"
+          echo "Database: $SNOWFLAKE_DATABASE"
+          echo "Schema: $SNOWFLAKE_SCHEMA"
+          echo "Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+

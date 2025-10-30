@@ -1,0 +1,1 @@
+CREATE DATABASE IF NOT EXISTS {{ environment }}_ADF_DWH;

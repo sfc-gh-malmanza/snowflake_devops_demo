@@ -1,0 +1,1 @@
+CREATE SCHEMA IF NOT EXISTS {{ environment }}_ADF_DWH.STD_EDW;
