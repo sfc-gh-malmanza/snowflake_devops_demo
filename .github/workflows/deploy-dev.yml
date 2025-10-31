@@ -50,6 +50,12 @@ jobs:
             local file=$1
             echo "  → Deploying $(basename $file)..."
             snow sql -f "$file" \
+              --account "$SNOWFLAKE_ACCOUNT" \
+              --user "$SNOWFLAKE_USER" \
+              --password "$SNOWFLAKE_PASSWORD" \
+              --role "$SNOWFLAKE_ROLE" \
+              --warehouse "$SNOWFLAKE_WAREHOUSE" \
+              --database "$SNOWFLAKE_DATABASE" \
               -D "environment='DEV'"
           }
           
