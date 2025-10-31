@@ -53,6 +53,26 @@ jobs:
             --database "$SNOWFLAKE_CONNECTIONS_DEFAULT_DATABASE" \
             -q "ALTER GIT REPOSITORY util_db.public.snowflake_devops_repo FETCH;"
 
+      - name: Create Database and Schema
+        run: |
+          echo "🏗️ Creating database and schema..."
+          snow sql --temporary-connection \
+            --account "$SNOWFLAKE_CONNECTIONS_DEFAULT_ACCOUNT" \
+            --user "$SNOWFLAKE_CONNECTIONS_DEFAULT_USER" \
+            --password "$SNOWFLAKE_CONNECTIONS_DEFAULT_PASSWORD" \
+            --role "$SNOWFLAKE_CONNECTIONS_DEFAULT_ROLE" \
+            --warehouse "$SNOWFLAKE_CONNECTIONS_DEFAULT_WAREHOUSE" \
+            --database "$SNOWFLAKE_CONNECTIONS_DEFAULT_DATABASE" \
+            -q "EXECUTE IMMEDIATE FROM '@util_db.public.snowflake_devops_repo/branches/main/adf_dwh/adf_dwh.sql' USING (environment => 'DEV');"
+          snow sql --temporary-connection \
+            --account "$SNOWFLAKE_CONNECTIONS_DEFAULT_ACCOUNT" \
+            --user "$SNOWFLAKE_CONNECTIONS_DEFAULT_USER" \
+            --password "$SNOWFLAKE_CONNECTIONS_DEFAULT_PASSWORD" \
+            --role "$SNOWFLAKE_CONNECTIONS_DEFAULT_ROLE" \
+            --warehouse "$SNOWFLAKE_CONNECTIONS_DEFAULT_WAREHOUSE" \
+            --database "$SNOWFLAKE_CONNECTIONS_DEFAULT_DATABASE" \
+            -q "EXECUTE IMMEDIATE FROM '@util_db.public.snowflake_devops_repo/branches/main/adf_dwh/std_edw/std_edw.sql' USING (environment => 'DEV');"
+
       - name: Deploy Tables
         run: |
           echo "📁 Deploying Tables..."
