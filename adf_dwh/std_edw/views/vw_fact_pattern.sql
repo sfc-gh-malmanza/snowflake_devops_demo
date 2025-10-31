@@ -5,7 +5,9 @@
 -- Environment: {{ environment }}
 -- ============================================================================
 
-CREATE OR REPLACE VIEW {{ environment }}_ADF_DWH.STD_EDW.VW_FACT_PATTERN AS
+CREATE OR REPLACE VIEW {{ environment }}_ADF_DWH.STD_EDW.VW_FACT_PATTERN
+COMMENT = 'View of pattern fact data for {{ environment }} environment'
+AS
 SELECT
     PATTERN_KEY,
     DATE_KEY,
@@ -36,6 +38,5 @@ SELECT
     PATTERN_END_TIMESTAMP,
     CREATED_TIMESTAMP,
     UPDATED_TIMESTAMP
-FROM {{ environment }}_ADF_DWH.STD_EDW.FACT_PATTERN
-COMMENT = 'View of pattern fact data for {{ environment }} environment';
+FROM {{ environment }}_ADF_DWH.STD_EDW.FACT_PATTERN;
 
