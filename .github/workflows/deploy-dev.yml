@@ -1,8 +1,7 @@
 # ============================================================================
-# GitHub Actions Workflow: Deploy to Development
-# Description: Automated deployment to DEV environment using Snowflake CLI
-# Trigger: Push to development branch OR PR opened to main/production
-# Reference: https://docs.snowflake.com/en/developer-guide/builders/devops
+# GitHub Actions Workflow: Deploy to Development (Git Integration)
+# Description: Uses Snowflake Git Integration to deploy from repository
+# Trigger: Push to development branch OR PR opened to main
 # ============================================================================
 
 name: Deploy to Development
@@ -19,19 +18,18 @@ on:
     paths:
       - 'adf_dwh/**'
 
-
 jobs:
   deploy-dev:
     runs-on: ubuntu-latest
     environment: development
 
     env:
-      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
-      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_DEV_USER }}
-      SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_DEV_PASSWORD }}
-      SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_DEV_ROLE }}
-      SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_DEV_WAREHOUSE }}
-      SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DEV_DATABASE }}
+      SNOWFLAKE_CONNECTIONS_DEFAULT_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_CONNECTIONS_DEFAULT_USER: ${{ secrets.SNOWFLAKE_DEV_USER }}
+      SNOWFLAKE_CONNECTIONS_DEFAULT_PASSWORD: ${{ secrets.SNOWFLAKE_DEV_PASSWORD }}
+      SNOWFLAKE_CONNECTIONS_DEFAULT_ROLE: ${{ secrets.SNOWFLAKE_DEV_ROLE }}
+      SNOWFLAKE_CONNECTIONS_DEFAULT_WAREHOUSE: ${{ secrets.SNOWFLAKE_DEV_WAREHOUSE }}
+      SNOWFLAKE_CONNECTIONS_DEFAULT_DATABASE: ${{ secrets.SNOWFLAKE_DEV_DATABASE }}
 
     steps:
       - name: Checkout repository
@@ -41,68 +39,38 @@ jobs:
         uses: Snowflake-Labs/snowflake-cli-action@v1.5
         with:
           cli-version: "latest"
-          default-config-file-path: ".snowflake/config.toml"
 
-      - name: Deploy All Database Objects
+      - name: Fetch Latest from Git Repository
         run: |
-          # Function to execute SQL files with common parameters
-          execute_sql() {
-            local file=$1
-            echo "  → Deploying $(basename $file)..."
-            snow sql -f "$file" \
-              --account "$SNOWFLAKE_ACCOUNT" \
-              --user "$SNOWFLAKE_USER" \
-              --password "$SNOWFLAKE_PASSWORD" \
-              --role "$SNOWFLAKE_ROLE" \
-              --warehouse "$SNOWFLAKE_WAREHOUSE" \
-              --database "$SNOWFLAKE_DATABASE" \
-              -D "environment='DEV'"
-          }
-          
-          # Deploy in dependency order
-          echo "Step 1: Setting up database..."
-          if [ -d "adf_dwh/std_edw/setup" ]; then
-            for file in adf_dwh/std_edw/setup/*.sql; do
-              [ -f "$file" ] && execute_sql "$file"
-            done
-          fi
-          
-          echo ""
-          echo "Step 2: Deploying tables..."
-          if [ -d "adf_dwh/std_edw/tables" ]; then
-            for file in adf_dwh/std_edw/tables/*.sql; do
-              [ -f "$file" ] && execute_sql "$file"
-            done
-          fi
-          
-          echo ""
-          echo "Step 3: Deploying views..."
-          if [ -d "adf_dwh/std_edw/views" ]; then
-            for file in adf_dwh/std_edw/views/*.sql; do
-              [ -f "$file" ] && execute_sql "$file"
-            done
-          fi
-          
-          echo ""
-          echo "Step 4: Deploying procedures..."
-          if [ -d "adf_dwh/std_edw/procedures" ]; then
-            for file in adf_dwh/std_edw/procedures/*.sql; do
-              [ -f "$file" ] && execute_sql "$file"
-            done
-          fi
-          
-          echo ""
-          echo "Step 5: Deploying tasks..."
-          if [ -d "adf_dwh/std_edw/tasks" ]; then
-            for file in adf_dwh/std_edw/tasks/*.sql; do
-              [ -f "$file" ] && execute_sql "$file"
-            done
-          fi
+          echo "🔄 Fetching latest changes from Git..."
+          snow sql -q "ALTER GIT REPOSITORY snowflake_devops_repo FETCH;"
 
+      - name: Deploy Tables
+        run: |
+          echo "📁 Deploying Tables..."
+          snow git execute "@snowflake_devops_repo/branches/main/adf_dwh/std_edw/tables/*.sql" \
+            -D "environment='DEV'"
+
+      - name: Deploy Views
+        run: |
+          echo "📁 Deploying Views..."
+          snow git execute "@snowflake_devops_repo/branches/main/adf_dwh/std_edw/views/*.sql" \
+            -D "environment='DEV'"
+
+      - name: Deploy Procedures
+        run: |
+          echo "📁 Deploying Procedures..."
+          snow git execute "@snowflake_devops_repo/branches/main/adf_dwh/std_edw/procedures/*.sql" \
+            -D "environment='DEV'"
+
+      - name: Deploy Tasks
+        run: |
+          echo "📁 Deploying Tasks (if any)..."
+          snow git execute "@snowflake_devops_repo/branches/main/adf_dwh/std_edw/tasks/*.sql" \
+            -D "environment='DEV'" || true
 
       - name: Deployment Summary
         run: |
-          echo "✓ Deployment to DEV completed successfully!"
-          echo "Database: $SNOWFLAKE_DATABASE"
-          echo "Timestamp: $(date -u +"%Y-%m-%d %H:%M:%S UTC")"
-
+          echo "✅ Deployment to DEV complete!"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
