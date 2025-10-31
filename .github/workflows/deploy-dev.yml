@@ -17,6 +17,7 @@ on:
       - main
     paths:
       - 'adf_dwh/**'
+      - '.github/workflows/deploy-dev.yml'
 
 jobs:
   deploy-dev:
