@@ -51,30 +51,30 @@ jobs:
       - name: Fetch Latest from Git Repository
         run: |
           echo "🔄 Fetching latest changes from Git..."
-          snow sql -q "ALTER GIT REPOSITORY snowflake_devops_repo FETCH;"
+          snow sql -q "ALTER GIT REPOSITORY util_db.public.snowflake_devops_repo FETCH;"
 
       - name: Deploy Tables
         run: |
           echo "📁 Deploying Tables to PRODUCTION..."
-          snow git execute "@snowflake_devops_repo/branches/main/adf_dwh/std_edw/tables/*.sql" \
+          snow git execute "@util_db.public.snowflake_devops_repo/branches/main/adf_dwh/std_edw/tables/*.sql" \
             -D "environment='PROD'"
 
       - name: Deploy Views
         run: |
           echo "📁 Deploying Views to PRODUCTION..."
-          snow git execute "@snowflake_devops_repo/branches/main/adf_dwh/std_edw/views/*.sql" \
+          snow git execute "@util_db.public.snowflake_devops_repo/branches/main/adf_dwh/std_edw/views/*.sql" \
             -D "environment='PROD'"
 
       - name: Deploy Procedures
         run: |
           echo "📁 Deploying Procedures to PRODUCTION..."
-          snow git execute "@snowflake_devops_repo/branches/main/adf_dwh/std_edw/procedures/*.sql" \
+          snow git execute "@util_db.public.snowflake_devops_repo/branches/main/adf_dwh/std_edw/procedures/*.sql" \
             -D "environment='PROD'"
 
       - name: Deploy Tasks
         run: |
           echo "📁 Deploying Tasks to PRODUCTION (if any)..."
-          snow git execute "@snowflake_devops_repo/branches/main/adf_dwh/std_edw/tasks/*.sql" \
+          snow git execute "@util_db.public.snowflake_devops_repo/branches/main/adf_dwh/std_edw/tasks/*.sql" \
             -D "environment='PROD'" || true
 
       - name: Deployment Summary
