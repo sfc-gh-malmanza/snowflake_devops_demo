@@ -51,31 +51,91 @@ jobs:
       - name: Fetch Latest from Git Repository
         run: |
           echo "🔄 Fetching latest changes from Git..."
-          snow sql -q "ALTER GIT REPOSITORY util_db.public.snowflake_devops_repo FETCH;"
+          snow sql \
+            --temporary-connection \
+            --account "$SNOWFLAKE_CONNECTIONS_DEFAULT_ACCOUNT" \
+            --user "$SNOWFLAKE_CONNECTIONS_DEFAULT_USER" \
+            --password "$SNOWFLAKE_CONNECTIONS_DEFAULT_PASSWORD" \
+            --role "$SNOWFLAKE_CONNECTIONS_DEFAULT_ROLE" \
+            --warehouse "$SNOWFLAKE_CONNECTIONS_DEFAULT_WAREHOUSE" \
+            --database "$SNOWFLAKE_CONNECTIONS_DEFAULT_DATABASE" \
+            -q "ALTER GIT REPOSITORY util_db.public.snowflake_devops_repo FETCH;"
 
       - name: Deploy Tables
         run: |
           echo "📁 Deploying Tables to PRODUCTION..."
-          snow git execute "@util_db.public.snowflake_devops_repo/branches/main/adf_dwh/std_edw/tables/*.sql" \
-            -D "environment='PROD'"
+          snow sql --temporary-connection \
+            --account "$SNOWFLAKE_CONNECTIONS_DEFAULT_ACCOUNT" \
+            --user "$SNOWFLAKE_CONNECTIONS_DEFAULT_USER" \
+            --password "$SNOWFLAKE_CONNECTIONS_DEFAULT_PASSWORD" \
+            --role "$SNOWFLAKE_CONNECTIONS_DEFAULT_ROLE" \
+            --warehouse "$SNOWFLAKE_CONNECTIONS_DEFAULT_WAREHOUSE" \
+            --database "$SNOWFLAKE_CONNECTIONS_DEFAULT_DATABASE" \
+            -q "EXECUTE IMMEDIATE FROM '@util_db.public.snowflake_devops_repo/branches/main/adf_dwh/std_edw/tables/dim_calendar.sql' USING (environment => 'PROD');"
+          snow sql --temporary-connection \
+            --account "$SNOWFLAKE_CONNECTIONS_DEFAULT_ACCOUNT" \
+            --user "$SNOWFLAKE_CONNECTIONS_DEFAULT_USER" \
+            --password "$SNOWFLAKE_CONNECTIONS_DEFAULT_PASSWORD" \
+            --role "$SNOWFLAKE_CONNECTIONS_DEFAULT_ROLE" \
+            --warehouse "$SNOWFLAKE_CONNECTIONS_DEFAULT_WAREHOUSE" \
+            --database "$SNOWFLAKE_CONNECTIONS_DEFAULT_DATABASE" \
+            -q "EXECUTE IMMEDIATE FROM '@util_db.public.snowflake_devops_repo/branches/main/adf_dwh/std_edw/tables/dim_plant.sql' USING (environment => 'PROD');"
+          snow sql --temporary-connection \
+            --account "$SNOWFLAKE_CONNECTIONS_DEFAULT_ACCOUNT" \
+            --user "$SNOWFLAKE_CONNECTIONS_DEFAULT_USER" \
+            --password "$SNOWFLAKE_CONNECTIONS_DEFAULT_PASSWORD" \
+            --role "$SNOWFLAKE_CONNECTIONS_DEFAULT_ROLE" \
+            --warehouse "$SNOWFLAKE_CONNECTIONS_DEFAULT_WAREHOUSE" \
+            --database "$SNOWFLAKE_CONNECTIONS_DEFAULT_DATABASE" \
+            -q "EXECUTE IMMEDIATE FROM '@util_db.public.snowflake_devops_repo/branches/main/adf_dwh/std_edw/tables/dim_machines.sql' USING (environment => 'PROD');"
+          snow sql --temporary-connection \
+            --account "$SNOWFLAKE_CONNECTIONS_DEFAULT_ACCOUNT" \
+            --user "$SNOWFLAKE_CONNECTIONS_DEFAULT_USER" \
+            --password "$SNOWFLAKE_CONNECTIONS_DEFAULT_PASSWORD" \
+            --role "$SNOWFLAKE_CONNECTIONS_DEFAULT_ROLE" \
+            --warehouse "$SNOWFLAKE_CONNECTIONS_DEFAULT_WAREHOUSE" \
+            --database "$SNOWFLAKE_CONNECTIONS_DEFAULT_DATABASE" \
+            -q "EXECUTE IMMEDIATE FROM '@util_db.public.snowflake_devops_repo/branches/main/adf_dwh/std_edw/tables/dim_releases.sql' USING (environment => 'PROD');"
+          snow sql --temporary-connection \
+            --account "$SNOWFLAKE_CONNECTIONS_DEFAULT_ACCOUNT" \
+            --user "$SNOWFLAKE_CONNECTIONS_DEFAULT_USER" \
+            --password "$SNOWFLAKE_CONNECTIONS_DEFAULT_PASSWORD" \
+            --role "$SNOWFLAKE_CONNECTIONS_DEFAULT_ROLE" \
+            --warehouse "$SNOWFLAKE_CONNECTIONS_DEFAULT_WAREHOUSE" \
+            --database "$SNOWFLAKE_CONNECTIONS_DEFAULT_DATABASE" \
+            -q "EXECUTE IMMEDIATE FROM '@util_db.public.snowflake_devops_repo/branches/main/adf_dwh/std_edw/tables/std_pattern.sql' USING (environment => 'PROD');"
+          snow sql --temporary-connection \
+            --account "$SNOWFLAKE_CONNECTIONS_DEFAULT_ACCOUNT" \
+            --user "$SNOWFLAKE_CONNECTIONS_DEFAULT_USER" \
+            --password "$SNOWFLAKE_CONNECTIONS_DEFAULT_PASSWORD" \
+            --role "$SNOWFLAKE_CONNECTIONS_DEFAULT_ROLE" \
+            --warehouse "$SNOWFLAKE_CONNECTIONS_DEFAULT_WAREHOUSE" \
+            --database "$SNOWFLAKE_CONNECTIONS_DEFAULT_DATABASE" \
+            -q "EXECUTE IMMEDIATE FROM '@util_db.public.snowflake_devops_repo/branches/main/adf_dwh/std_edw/tables/fact_pattern.sql' USING (environment => 'PROD');"
 
       - name: Deploy Views
         run: |
           echo "📁 Deploying Views to PRODUCTION..."
-          snow git execute "@util_db.public.snowflake_devops_repo/branches/main/adf_dwh/std_edw/views/*.sql" \
-            -D "environment='PROD'"
+          snow sql --temporary-connection \
+            --account "$SNOWFLAKE_CONNECTIONS_DEFAULT_ACCOUNT" \
+            --user "$SNOWFLAKE_CONNECTIONS_DEFAULT_USER" \
+            --password "$SNOWFLAKE_CONNECTIONS_DEFAULT_PASSWORD" \
+            --role "$SNOWFLAKE_CONNECTIONS_DEFAULT_ROLE" \
+            --warehouse "$SNOWFLAKE_CONNECTIONS_DEFAULT_WAREHOUSE" \
+            --database "$SNOWFLAKE_CONNECTIONS_DEFAULT_DATABASE" \
+            -q "EXECUTE IMMEDIATE FROM '@util_db.public.snowflake_devops_repo/branches/main/adf_dwh/std_edw/views/vw_fact_pattern.sql' USING (environment => 'PROD');"
 
       - name: Deploy Procedures
         run: |
           echo "📁 Deploying Procedures to PRODUCTION..."
-          snow git execute "@util_db.public.snowflake_devops_repo/branches/main/adf_dwh/std_edw/procedures/*.sql" \
-            -D "environment='PROD'"
-
-      - name: Deploy Tasks
-        run: |
-          echo "📁 Deploying Tasks to PRODUCTION (if any)..."
-          snow git execute "@util_db.public.snowflake_devops_repo/branches/main/adf_dwh/std_edw/tasks/*.sql" \
-            -D "environment='PROD'" || true
+          snow sql --temporary-connection \
+            --account "$SNOWFLAKE_CONNECTIONS_DEFAULT_ACCOUNT" \
+            --user "$SNOWFLAKE_CONNECTIONS_DEFAULT_USER" \
+            --password "$SNOWFLAKE_CONNECTIONS_DEFAULT_PASSWORD" \
+            --role "$SNOWFLAKE_CONNECTIONS_DEFAULT_ROLE" \
+            --warehouse "$SNOWFLAKE_CONNECTIONS_DEFAULT_WAREHOUSE" \
+            --database "$SNOWFLAKE_CONNECTIONS_DEFAULT_DATABASE" \
+            -q "EXECUTE IMMEDIATE FROM '@util_db.public.snowflake_devops_repo/branches/main/adf_dwh/std_edw/procedures/sp_fact_pattern_load.sql' USING (environment => 'PROD');"
 
       - name: Deployment Summary
         run: |
