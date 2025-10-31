@@ -26,6 +26,6 @@ CREATE OR ALTER TABLE {{ environment }}_ADF_DWH.STD_EDW.DIM_PLANT (
     PHONE VARCHAR(50) COMMENT 'Plant contact phone number',
     EMAIL VARCHAR(200) COMMENT 'Plant contact email',
     CREATED_TIMESTAMP TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record creation timestamp',
-    UPDATED_TIMESTAMP TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record update timestamp',
+    UPDATED_TIMESTAMP TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record update timestamp'
 )
 COMMENT = 'Plant dimension table for {{ environment }} environment';

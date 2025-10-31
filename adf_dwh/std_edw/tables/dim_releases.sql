@@ -29,6 +29,6 @@ CREATE OR ALTER TABLE {{ environment }}_ADF_DWH.STD_EDW.DIM_RELEASES (
     AFFECTED_SYSTEMS TEXT COMMENT 'Systems affected by this release',
     DEPENDENCIES TEXT COMMENT 'Dependencies on other releases',
     CREATED_TIMESTAMP TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record creation timestamp',
-    UPDATED_TIMESTAMP TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record update timestamp',
+    UPDATED_TIMESTAMP TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record update timestamp'
 )
 COMMENT = 'Release dimension table for {{ environment }} environment';

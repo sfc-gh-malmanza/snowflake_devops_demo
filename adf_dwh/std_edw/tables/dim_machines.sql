@@ -30,6 +30,6 @@ CREATE OR ALTER TABLE {{ environment }}_ADF_DWH.STD_EDW.DIM_MACHINES (
     COST_CENTER VARCHAR(50) COMMENT 'Cost center for accounting',
     NOTES TEXT COMMENT 'Additional notes or comments',
     CREATED_TIMESTAMP TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record creation timestamp',
-    UPDATED_TIMESTAMP TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record update timestamp',
+    UPDATED_TIMESTAMP TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record update timestamp'
 )
 COMMENT = 'Machine dimension table for {{ environment }} environment';

@@ -44,6 +44,6 @@ CREATE OR ALTER TABLE {{ environment }}_ADF_DWH.STD_EDW.FACT_PATTERN (
     PATTERN_START_TIMESTAMP TIMESTAMP_NTZ COMMENT 'Pattern start timestamp',
     PATTERN_END_TIMESTAMP TIMESTAMP_NTZ COMMENT 'Pattern end timestamp',
     CREATED_TIMESTAMP TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record creation timestamp',
-    UPDATED_TIMESTAMP TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record update timestamp',
+    UPDATED_TIMESTAMP TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record update timestamp'
 )
 COMMENT = 'Fact table containing pattern execution metrics for {{ environment }} environment';

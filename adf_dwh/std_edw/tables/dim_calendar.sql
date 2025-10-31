@@ -22,6 +22,6 @@ CREATE OR ALTER TABLE {{ environment }}_ADF_DWH.STD_EDW.DIM_CALENDAR (
     IS_HOLIDAY BOOLEAN COMMENT 'Flag indicating if the date is a holiday',
     HOLIDAY_NAME VARCHAR(100) COMMENT 'Name of the holiday if applicable',
     CREATED_TIMESTAMP TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record creation timestamp',
-    UPDATED_TIMESTAMP TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record update timestamp',
+    UPDATED_TIMESTAMP TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record update timestamp'
 )
 COMMENT = 'Calendar dimension table for {{ environment }} environment';

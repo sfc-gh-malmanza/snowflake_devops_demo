@@ -53,6 +53,6 @@ CREATE OR ALTER TABLE {{ environment }}_ADF_DWH.STD_EDW.STD_PATTERN (
     CREATED_BY VARCHAR(200) COMMENT 'User who created the pattern',
     CREATED_TIMESTAMP TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record creation timestamp',
     UPDATED_BY VARCHAR(200) COMMENT 'User who last updated the pattern',
-    UPDATED_TIMESTAMP TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record update timestamp',
+    UPDATED_TIMESTAMP TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP() COMMENT 'Record update timestamp'
 )
 COMMENT = 'Standard pattern definitions for {{ environment }} environment';
